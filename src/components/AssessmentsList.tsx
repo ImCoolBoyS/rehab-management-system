@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -22,6 +22,8 @@ import {
   Award
 } from 'lucide-react';
 import { Student, Assessment } from '../types';
+import { uploadPdf, getPdfUrl } from '../lib/api';
+import { uploadPdf, getPdfUrl } from '../lib/api';
 
 interface AssessmentsListProps {
   assessments: Assessment[];
@@ -51,7 +53,8 @@ export default function AssessmentsList({
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [pdfFile, setPdfFile] = useState<{name: string, size: string} | null>(null);
+  const [pdfFile, setPdfFile] = useState<{name: string, size: string, file?: File} | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Split tabs state: mainTab can be 'baseline' or 'process'
   const [activeMainTab, setActiveMainTab] = useState<'baseline' | 'process'>(initialMainTab);
@@ -144,10 +147,10 @@ export default function AssessmentsList({
   }, [accessibleAssessments, searchQuery, activeMainTab, activeProcessSubTab]);
 
   // Handle scoring submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValues.studentId) {
-      alert('请先选择需要进行评估的康复对象。');
+      alert('\u8bf7\u5148\u9009\u62e9\u9700\u8981\u8fdb\u884c\u8bc4\u4f30\u7684\u5eb7\u590d\u5bf9\u8c61\u3002');
       return;
     }
 
@@ -159,13 +162,33 @@ export default function AssessmentsList({
       a => a.studentId === formValues.studentId && a.assessmentType === formValues.assessmentType
     );
     if (hasAlreadyType) {
-      const labelMap = {
-        baseline: '基线评估',
-        process1: '第一次过程评估',
-        process2: '第二次过程评估'
+      const labelMap: Record<string, string> = {
+        baseline: '\u57fa\u7ebf\u8bc4\u4f30',
+        process1: '\u7b2c\u4e00\u6b21\u8fc7\u7a0b\u8bc4\u4f30',
+        process2: '\u7b2c\u4e8c\u6b21\u8fc7\u7a0b\u8bc4\u4f30'
       };
-      alert(`抱歉！该学员已经录入过 [ ${labelMap[formValues.assessmentType]} ] 档案，请勿重复添加。`);
+      alert(`\u62b1\u6b49\uff01\u8be5\u5b66\u5458\u5df2\u7ecf\u5f55\u5165\u8fc7 [ ${labelMap[formValues.assessmentType]} ] \u6863\u6848\uff0c\u8bf7\u52ff\u91cd\u590d\u6dfb\u52a0\u3002`);
       return;
+    }
+
+    // Upload PDF first if selected
+    let pdfAttachment = undefined;
+    if (pdfFile?.file) {
+      setIsUploading(true);
+      try {
+        const uploadResult = await uploadPdf(pdfFile.file);
+        pdfAttachment = {
+          name: uploadResult.filename,
+          size: uploadResult.size,
+          filepath: uploadResult.filepath,
+          uploadedAt: new Date().toISOString()
+        };
+      } catch (err) {
+        alert('\u4e0a\u4f20 PDF \u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5');
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
     }
 
     const newAssess: Assessment = {
@@ -185,7 +208,7 @@ export default function AssessmentsList({
         adl: formValues.adl,
         iadl: formValues.iadl,
       },
-      pdfAttachment: pdfFile ? { ...pdfFile, uploadedAt: new Date().toISOString() } : undefined
+      pdfAttachment
     };
 
     onAddAssessment(newAssess);
@@ -440,7 +463,7 @@ export default function AssessmentsList({
                     </div>
                   </div>
                   <button
-                    onClick={() => alert(`正在调取档案柜下载：${selectedAssessment.pdfAttachment?.name}`)}
+                    onClick={() => { const url = getPdfUrl(selectedAssessment.pdfAttachment?.filepath || ''); if (url) window.open(url, '_blank'); else alert('找不到PDF文件'); }}
                     className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold cursor-pointer"
                   >
                     下载原件
@@ -646,7 +669,8 @@ export default function AssessmentsList({
                         if (file) {
                           setPdfFile({
                             name: file.name,
-                            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+                            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+                            file: file
                           });
                         }
                       };
@@ -699,3 +723,4 @@ export default function AssessmentsList({
     </div>
   );
 }
+

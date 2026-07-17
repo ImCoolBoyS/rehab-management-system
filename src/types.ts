@@ -84,6 +84,7 @@ export interface Assessment {
   pdfAttachment?: {
     name: string;
     size: string;
+    filepath?: string;
     uploadedAt: string;
   };
 }

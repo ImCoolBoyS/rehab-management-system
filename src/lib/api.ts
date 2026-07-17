@@ -358,3 +358,23 @@ export const loginUser = async (username: string, password: string): Promise<{su
   }
   return data;
 };
+// ==================== 9. FILE UPLOAD ====================
+export const uploadPdf = async (file: File): Promise<{success: boolean; filepath: string; filename: string; size: string}> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await client.post('/api/v1/upload/pdf', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const getPdfUrl = (filepath: string): string => {
+  if (!filepath) return '';
+  // filepath is like: C:/Users/.../uploads/pdfs/xxx.pdf
+  // We need to extract the relative path for the API
+  const parts = filepath.split('\\').join('/').split('uploads/');
+  if (parts.length > 1) {
+    return '/api/v1/files/uploads/' + parts[1];
+  }
+  return '/api/v1/files/' + filepath;
+};

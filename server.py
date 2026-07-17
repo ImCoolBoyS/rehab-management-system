@@ -3,7 +3,7 @@
 精神康复中心管理系统 - FastAPI 后端服务器
 数据库: PostgreSQL 16
 """
-import os, json, re
+import os, json, re, uuid, shutil
 from typing import Optional
 from datetime import datetime, timedelta
 import psycopg2
@@ -11,7 +11,7 @@ from psycopg2 import pool as pg_pool
 from psycopg2.extras import RealDictCursor
 import bcrypt
 import jwt
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +24,11 @@ from slowapi.errors import RateLimitExceeded
 DB_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/rehab_db")
 PORT = int(os.getenv("PORT", "8000"))
 PRODUCTION = os.getenv("NODE_ENV") == "production"
+
+# Upload configuration
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads", "pdfs")
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Security: JWT Secret (use env var in production)
 JWT_SECRET = os.getenv("JWT_SECRET", "rehab-secret-key-change-in-production!!")
@@ -592,6 +597,32 @@ def delete_announcement(aid: str):
     finally: put_db(conn)
 
 # ─── LOGIN ─────────────────────────────────────────
+
+# File Upload / Download
+@app.post("/api/v1/upload/pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(400, "仅支持 PDF 格式文件")
+    raw = await file.read()
+    if len(raw) > MAX_UPLOAD_SIZE:
+        raise HTTPException(413, f"文件大小超过限制 (最大 {MAX_UPLOAD_SIZE//1024//1024}MB)")
+    stem = uuid.uuid4().hex[:12]
+    safe_name = f"{stem}_{file.filename.replace(' ', '_')}"
+    filepath = os.path.join(UPLOAD_DIR, safe_name)
+    with open(filepath, "wb") as f:
+        f.write(raw)
+    return {"success": True, "filepath": filepath, "filename": file.filename, "size": f"{len(raw) / 1024:.1f} KB"}
+
+@app.get("/api/v1/files/{filepath:path}")
+def serve_file(filepath: str):
+    full_path = os.path.join(os.path.dirname(__file__), filepath)
+    abs_req = os.path.abspath(full_path)
+    if not abs_req.startswith(os.path.abspath(os.path.dirname(__file__))):
+        raise HTTPException(403, "Access denied")
+    if not os.path.isfile(abs_req):
+        raise HTTPException(404, "File not found")
+    return FileResponse(abs_req, media_type="application/pdf")
+
 @app.post("/api/v1/login")
 @limiter.limit("5/minute")  # Rate limit: 5 attempts per minute
 def login(request: Request, body: LoginReq):
@@ -647,3 +678,5 @@ if PRODUCTION:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=not PRODUCTION)
+
+
