@@ -105,7 +105,7 @@ export default function Statistics({
       
       const townStudentIds = townStudents.map(s => s.id);
       const townTrainings = trainings.filter(t => townStudentIds.includes(t.studentId));
-      const todayTownTrainings = townTrainings.filter(t => t.createdAt.startsWith(systemTodayStr)).length;
+      const todayTownTrainings = townTrainings.filter(t => t.createdAt?.startsWith(systemTodayStr)).length;
       
       const townVisits = visits.filter(v => townStudentIds.includes(v.studentId));
 

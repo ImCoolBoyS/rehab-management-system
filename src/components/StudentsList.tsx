@@ -291,7 +291,7 @@ export default function StudentsList({
         ...(formValues as Student),
         id: newId,
         age: formValues.age || 30,
-        siteId: formValues.siteId || (currentUser.role !== 'admin' ? currentUser.siteId : 'site-fuan-1'),
+        siteId: formValues.siteId || currentUser.siteId,
         createdAt: new Date().toISOString(),
       };
       onAddStudent(toSubmit);
@@ -369,7 +369,7 @@ export default function StudentsList({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {currentUser.role !== 'worker' && (
+          {/* All roles can add students */}
             <button
               onClick={handleOpenAdd}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-xs font-bold cursor-pointer transition-all shrink-0 h-[34px]"
@@ -377,7 +377,6 @@ export default function StudentsList({
               <UserPlus className="h-4 w-4" />
               <span>建档登记</span>
             </button>
-          )}
 
           <button
             onClick={handleExportCSV}
@@ -466,7 +465,7 @@ export default function StudentsList({
                       <Eye className="h-3 w-3" />
                       <span>查看</span>
                     </button>
-                    {currentUser.role !== 'worker' && (
+                    {/* All roles can edit students */}
                       <>
                         <button
                           onClick={() => handleOpenEdit(stu)}
@@ -499,7 +498,6 @@ export default function StudentsList({
                           <span>删除</span>
                         </button>
                       </>
-                    )}
                   </td>
                 </tr>
               ))}

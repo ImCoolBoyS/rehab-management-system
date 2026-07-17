@@ -2,12 +2,65 @@ import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Site, User, Student, Assessment, TrainingRecord, HomeVisit, Announcement } from '../types';
 
+// Auth token management
+let authToken: string | null = null;
+
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+  if (token) {
+    localStorage.setItem('rehab_auth_token', token);
+  } else {
+    localStorage.removeItem('rehab_auth_token');
+  }
+};
+
+export const getAuthToken = (): string | null => {
+  if (!authToken) {
+    authToken = localStorage.getItem('rehab_auth_token');
+  }
+  return authToken;
+};
+
+
+const handleMutationError = (error: any) => {
+  if (error?.response?.data?.detail) {
+    alert("操作失败: " + error.response.data.detail);
+  } else if (error?.message) {
+    alert("操作失败: " + error.message);
+  } else {
+    alert("操作失败，请检查网络或联系管理员");
+  }
+  console.error("Mutation error:", error);
+};
 const client = axios.create({
   baseURL: '',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Auth interceptor - adds JWT token to all requests
+client.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = 'Bearer ' + token;
+  }
+  return config;
+});
+
+// Auth interceptor - handle 401 responses
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token expired or invalid - clear it
+      setAuthToken(null);
+      // The App.tsx will check this and redirect to login
+      window.dispatchEvent(new CustomEvent('auth:expired'));
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ==================== 1. SITES ====================
 export const useSitesQuery = () => {
@@ -38,6 +91,7 @@ export const useAddUserMutation = () => {
       const response = await client.post('/api/v1/users', newUser);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
@@ -51,6 +105,7 @@ export const useUpdateUserMutation = () => {
       const response = await client.put(`/api/v1/users/${updatedUser.id}`, updatedUser);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
@@ -64,6 +119,7 @@ export const useDeleteUserMutation = () => {
       const response = await client.delete(`/api/v1/users/${userId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
@@ -88,6 +144,7 @@ export const useAddStudentMutation = () => {
       const response = await client.post('/api/v1/students', newStudent);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
@@ -101,6 +158,7 @@ export const useUpdateStudentMutation = () => {
       const response = await client.put(`/api/v1/students/${updatedStudent.id}`, updatedStudent);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
@@ -114,6 +172,7 @@ export const useDeleteStudentMutation = () => {
       const response = await client.delete(`/api/v1/students/${studentId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
     },
@@ -138,6 +197,7 @@ export const useAddAssessmentMutation = () => {
       const response = await client.post('/api/v1/assessments', newAssessment);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] });
     },
@@ -151,6 +211,7 @@ export const useDeleteAssessmentMutation = () => {
       const response = await client.delete(`/api/v1/assessments/${assessmentId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] });
     },
@@ -175,6 +236,7 @@ export const useAddTrainingMutation = () => {
       const response = await client.post('/api/v1/trainings', newTraining);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trainings'] });
     },
@@ -188,6 +250,7 @@ export const useDeleteTrainingMutation = () => {
       const response = await client.delete(`/api/v1/trainings/${trainingId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trainings'] });
     },
@@ -212,6 +275,7 @@ export const useAddVisitMutation = () => {
       const response = await client.post('/api/v1/visits', newVisit);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
     },
@@ -225,6 +289,7 @@ export const useDeleteVisitMutation = () => {
       const response = await client.delete(`/api/v1/visits/${visitId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
     },
@@ -249,6 +314,7 @@ export const useAddAnnouncementMutation = () => {
       const response = await client.post('/api/v1/announcements', newAnnouncement);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
     },
@@ -262,6 +328,7 @@ export const useUpdateAnnouncementMutation = () => {
       const response = await client.put(`/api/v1/announcements/${updatedAnnouncement.id}`, updatedAnnouncement);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
     },
@@ -275,8 +342,19 @@ export const useDeleteAnnouncementMutation = () => {
       const response = await client.delete(`/api/v1/announcements/${announcementId}`);
       return response.data;
     },
+    onError: handleMutationError,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
     },
   });
+};
+
+// ==================== 8. LOGIN ====================
+export const loginUser = async (username: string, password: string): Promise<{success: boolean; token: string; user: User}> => {
+  const response = await client.post('/api/v1/login', { username, password });
+  const data = response.data;
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  return data;
 };

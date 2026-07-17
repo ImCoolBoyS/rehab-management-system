@@ -45,9 +45,9 @@ export default function Dashboard({
   // 1. Calculate General Metrics and comparative differences
   const metrics = useMemo(() => {
     // Today's new trainings
-    const todayTrainings = trainings.filter(t => t.createdAt.startsWith(systemTodayStr)).length;
+    const todayTrainings = trainings.filter(t => t.createdAt?.startsWith(systemTodayStr)).length;
     // Yesterday's new trainings
-    const yesterdayTrainings = trainings.filter(t => t.createdAt.startsWith(systemYesterdayStr)).length;
+    const yesterdayTrainings = trainings.filter(t => t.createdAt?.startsWith(systemYesterdayStr)).length;
     // Difference with previous day (+1 or -2)
     const trainingsDiff = todayTrainings - yesterdayTrainings;
 
@@ -109,7 +109,7 @@ export default function Dashboard({
   // Today's Active Towns count
   const todayActiveSitesCount = useMemo(() => {
     const activeTowns = new Set<string>();
-    trainings.filter(t => t.createdAt.startsWith(systemTodayStr)).forEach(t => {
+    trainings.filter(t => t.createdAt?.startsWith(systemTodayStr)).forEach(t => {
       const student = students.find(s => s.id === t.studentId);
       if (student) {
         activeTowns.add(student.town);
@@ -286,7 +286,7 @@ export default function Dashboard({
                   </p>
                   <div className="flex justify-between text-[10px] text-slate-400 font-mono pt-1">
                     <span>发布人: {ann.createdBy}</span>
-                    <span>{ann.createdAt.slice(0, 10)}</span>
+                    <span>{ann.createdAt?.slice(0, 10) || '-'}</span>
                   </div>
                 </div>
               ))}

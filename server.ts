@@ -13,13 +13,13 @@ import { createServer as createViteServer } from 'vite';
 import pg from 'pg';
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 app.use(express.json());
 
 // PostgreSQL 连接池
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/rehab_db',
+  connectionString: 'postgresql://postgres:postgres@localhost:5432/rehab_db',
 });
 
 // 测试数据库连接
@@ -75,7 +75,7 @@ app.post('/api/v1/users', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO users (username, real_name, gender, role, site_id, phone, password, is_active) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, true) RETURNING *`,
-      [username, realName, gender, role, siteId, phone, password || '123456']
+      [username, realName, gender, role, siteId, phone, password || '128080']
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -120,9 +120,9 @@ app.get('/api/v1/students', async (req, res) => {
              living_situation as "livingSituation", has_disability_cert as "hasDisabilityCert",
              disability_type as "disabilityType", disability_level as "disabilityLevel",
              has_dibao as "hasDibao", contact_person as "contactPerson", contact_phone as "contactPhone",
-             co_residents, co_resident_relation as "coResidentRelation",
+             co_residents as "coResidents", co_resident_relation as "coResidentRelation",
              living_environment as "livingEnvironment", economic_status as "economicStatus",
-             income_source, money_management as "moneyManagement", past_behavior as "pastBehavior",
+             income_source as "incomeSource", money_management as "moneyManagement", past_behavior as "pastBehavior",
              current_risk as "currentRisk", medication_compliance as "medicationCompliance",
              medication_method as "medicationMethod", medication_detail as "medicationDetail",
              town, village, site_id as "siteId", status, risk_level as "riskLevel",
@@ -140,8 +140,8 @@ app.post('/api/v1/students', async (req, res) => {
     const result = await pool.query(`
       INSERT INTO students (name, id_card, gender, ethnicity, birth_date, age, phone, home_phone, address,
         marital_status, living_situation, has_disability_cert, disability_type, disability_level, has_dibao,
-        contact_person, contact_phone, co_residents, co_resident_relation, living_environment, economic_status,
-        income_source, money_management, past_behavior, current_risk, medication_compliance, medication_method,
+        contact_person, contact_phone, co_residents as "coResidents", co_resident_relation, living_environment, economic_status,
+        income_source as "incomeSource", money_management, past_behavior, current_risk, medication_compliance, medication_method,
         medication_detail, town, village, site_id, status, risk_level, service_type)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34)
       RETURNING *`,
@@ -166,9 +166,9 @@ app.put('/api/v1/students/:id', async (req, res) => {
       UPDATE students SET name=$1, id_card=$2, gender=$3, phone=$4, address=$5,
         marital_status=$6, living_situation=$7, has_disability_cert=$8,
         disability_type=$9, disability_level=$10, has_dibao=$11,
-        contact_person=$12, contact_phone=$13, co_residents=$14,
+        contact_person=$12, contact_phone=$13, co_residents as "coResidents"=$14,
         co_resident_relation=$15, living_environment=$16, economic_status=$17,
-        income_source=$18, money_management=$19, past_behavior=$20,
+        income_source as "incomeSource"=$18, money_management=$19, past_behavior=$20,
         current_risk=$21, medication_compliance=$22, medication_method=$23,
         medication_detail=$24, town=$25, village=$26, status=$27, risk_level=$28
       WHERE id=$29 AND deleted_at IS NULL RETURNING *`,
@@ -401,3 +401,5 @@ async function setupVite() {
 }
 
 setupVite();
+
+

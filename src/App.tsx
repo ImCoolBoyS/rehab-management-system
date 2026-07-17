@@ -52,6 +52,9 @@ import {
   useAddAnnouncementMutation,
   useUpdateAnnouncementMutation,
   useDeleteAnnouncementMutation,
+  loginUser,
+  getAuthToken,
+  setAuthToken,
 } from './lib/api';
 
 // Components
@@ -148,39 +151,26 @@ function AppContent() {
   const [isCountdownFinished, setIsCountdownFinished] = useState<boolean>(false);
 
   // Handle Login Action
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
-    // Locate user in local users repository
-    const matchedUser = users.find(u => u.username === usernameInput.trim());
-
-    if (!matchedUser) {
-      setLoginError('该账号用户名在A市精康网络中未注册。');
-      return;
+    try {
+      const result = await loginUser(usernameInput.trim(), passwordInput);
+      setSessionUser(result.user);
+      setIsAuthenticated(true);
+      setCurrentTab('dashboard');
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || '登录失败，请检查网络连接。';
+      setLoginError(msg);
     }
-
-    if (!matchedUser.isActive) {
-      setLoginError('抱歉！该账号已被总站停用。请联系张主任重新启用。');
-      return;
-    }
-
-    // Since this is a standalone demo simulation, we accept password 'admin123'
-    if (passwordInput !== 'admin123') {
-      setLoginError('登录密码核准失败，请重新输入。');
-      return;
-    }
-
-    // Success login
-    setSessionUser(matchedUser);
-    setIsAuthenticated(true);
-    setCurrentTab('dashboard');
   };
 
   // Logout Helper
   const handleLogout = () => {
     setIsAuthenticated(false);
     setSessionUser(null);
+    setAuthToken(null);
     setUsernameInput('admin');
     setPasswordInput('admin123');
     setLoginError('');
@@ -200,13 +190,54 @@ function AppContent() {
     return site ? site.town : '赛岐镇';
   }, [sessionUser, sites]);
 
+  // Initialize auth token from localStorage
+  React.useEffect(() => {
+    const token = getAuthToken();
+    if (token && sessionUser) {
+      // Token exists and user is logged in - all good
+    } else if (token && !sessionUser) {
+      // Token exists but no session - check if expired
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp * 1000 < Date.now()) {
+          setAuthToken(null);
+          setIsAuthenticated(false);
+          setSessionUser(null);
+        }
+      } catch (e) {
+        setAuthToken(null);
+      }
+    }
+  }, [sessionUser]);
+  
+  // Listen for auth:expired events from API interceptor
+  React.useEffect(() => {
+    const handler = () => {
+      setIsAuthenticated(false);
+      setSessionUser(null);
+    };
+    window.addEventListener('auth:expired', handler);
+    return () => window.removeEventListener('auth:expired', handler);
+  }, []);
+  
   // Operations and Mutations Callbacks
   const handleAddStudent = (newStudent: Student) => {
-    addStudentMutation.mutate(newStudent);
+    // Map town to correct site UUID from database
+    const matchedSite = sites.find(s => s.town === newStudent.town);
+    const studentToAdd: Student = {
+      ...newStudent,
+      siteId: matchedSite ? matchedSite.id : newStudent.siteId,
+    };
+    addStudentMutation.mutate(studentToAdd);
   };
 
   const handleUpdateStudent = (updatedStudent: Student) => {
-    updateStudentMutation.mutate(updatedStudent);
+    const matchedSite = sites.find(s => s.town === updatedStudent.town);
+    const studentToUpdate: Student = {
+      ...updatedStudent,
+      siteId: matchedSite ? matchedSite.id : updatedStudent.siteId,
+    };
+    updateStudentMutation.mutate(studentToUpdate);
   };
 
   const handleDeleteStudent = (id: string) => {
@@ -304,24 +335,28 @@ function AppContent() {
   const handleClosePopup = () => {
     if (!activePopupAnn) return;
     
-    // Add to dismissed list
-    setDismissedAnnIds(prev => [...prev, activePopupAnn.id]);
+    // Dismiss ALL currently active announcements at once
+    const todayStr = '2026-07-17';
+    const allActiveIds = announcements
+      .filter(ann => ann.startDate && ann.endDate && ann.startDate <= todayStr && ann.endDate >= todayStr)
+      .map(ann => ann.id);
     
-    // Save to fully read list in localStorage
+    setDismissedAnnIds(prev => [...new Set([...prev, ...allActiveIds])]);
+    
+    // Save all to fully read list in localStorage
     const fullyReadStr = localStorage.getItem('fully_read_announcements') || '[]';
     try {
       const fullyReadList = JSON.parse(fullyReadStr);
-      if (!fullyReadList.includes(activePopupAnn.id)) {
-        fullyReadList.push(activePopupAnn.id);
-        localStorage.setItem('fully_read_announcements', JSON.stringify(fullyReadList));
-      }
+      allActiveIds.forEach(id => {
+        if (!fullyReadList.includes(id)) fullyReadList.push(id);
+      });
+      localStorage.setItem('fully_read_announcements', JSON.stringify(fullyReadList));
     } catch (e) {
-      localStorage.setItem('fully_read_announcements', JSON.stringify([activePopupAnn.id]));
+      localStorage.setItem('fully_read_announcements', JSON.stringify(allActiveIds));
     }
     
     setActivePopupAnn(null);
   };
-
   const handleToggleUserStatus = (userId: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
