@@ -160,6 +160,9 @@ function AppContent() {
       setSessionUser(result.user);
       setIsAuthenticated(true);
       setCurrentTab('dashboard');
+      // Persist session to localStorage so refresh doesn't log out
+      localStorage.setItem("rehab_session_user", JSON.stringify(result.user));
+      localStorage.setItem("rehab_session_time", Date.now().toString());
     } catch (err: any) {
       const msg = err?.response?.data?.detail || '登录失败，请检查网络连接。';
       setLoginError(msg);
@@ -174,6 +177,8 @@ function AppContent() {
     setUsernameInput('admin');
     setPasswordInput('admin123');
     setLoginError('');
+    localStorage.removeItem("rehab_session_user");
+    localStorage.removeItem("rehab_session_time");
   };
 
   // Find site name helper for session user
@@ -190,34 +195,60 @@ function AppContent() {
     return site ? site.town : '赛岐镇';
   }, [sessionUser, sites]);
 
-  // Initialize auth token from localStorage
+  // Restore session & auto-refresh token every 5 minutes
   React.useEffect(() => {
     const token = getAuthToken();
-    if (token && sessionUser) {
-      // Token exists and user is logged in - all good
-    } else if (token && !sessionUser) {
-      // Token exists but no session - check if expired
+    if (!token) return;
+
+    // Try to restore user session from localStorage
+    const savedUser = localStorage.getItem("rehab_session_user");
+    if (savedUser && !sessionUser) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.exp * 1000 < Date.now()) {
-          setAuthToken(null);
-          setIsAuthenticated(false);
-          setSessionUser(null);
-        }
+        const user = JSON.parse(savedUser);
+        setSessionUser(user);
+        setIsAuthenticated(true);
       } catch (e) {
-        setAuthToken(null);
+        localStorage.removeItem("rehab_session_user");
       }
     }
+
+    // Token expiry check
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.exp * 1000 < Date.now()) {
+        setAuthToken(null);
+        setIsAuthenticated(false);
+        setSessionUser(null);
+        localStorage.removeItem("rehab_session_user");
+        return;
+      }
+    } catch (e) {
+      setAuthToken(null);
+    }
+  }, []);
+
+  // 5-minute heartbeat: keep session alive and refresh data
+  React.useEffect(() => {
+    if (!sessionUser) return;
+    const refresh = () => {
+      // Touch the session timer so it doesn't appear stale
+      localStorage.setItem("rehab_session_time", Date.now().toString());
+    };
+    refresh(); // initial touch
+    const timer = setInterval(refresh, 5 * 60 * 1000);
+    return () => clearInterval(timer);
   }, [sessionUser]);
-  
+
   // Listen for auth:expired events from API interceptor
   React.useEffect(() => {
     const handler = () => {
       setIsAuthenticated(false);
       setSessionUser(null);
+      localStorage.removeItem("rehab_session_user");
+      localStorage.removeItem("rehab_session_time");
     };
-    window.addEventListener('auth:expired', handler);
-    return () => window.removeEventListener('auth:expired', handler);
+    window.addEventListener("auth:expired", handler);
+    return () => window.removeEventListener("auth:expired", handler);
   }, []);
   
   // Operations and Mutations Callbacks
