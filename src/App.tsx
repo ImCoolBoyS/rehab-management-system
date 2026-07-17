@@ -423,14 +423,14 @@ function AppContent() {
             <ClipboardList className="h-8 w-8 text-cyan-400" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-wider text-white">精神障碍社区康复服务信息系统</h1>
-          <p className="text-xs text-cyan-400 font-semibold uppercase tracking-widest">FUAN COMMUNITY REHABILITATION SYSTEM</p>
+          
         </div>
 
         {/* Central Login Card */}
         <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/10 z-10">
           <div className="text-center pb-4 border-b border-slate-100 mb-6">
             <h3 className="text-sm font-bold text-slate-800">操作人员安全账户登录</h3>
-            <p className="text-[11px] text-slate-400 mt-1">请输入卫健/残联配发的福安专网账号</p>
+            
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs text-slate-800">
@@ -487,47 +487,11 @@ function AppContent() {
             </button>
           </form>
 
-          {/* Quick Select Buttons to facilitate testing and verify Data Isolation rules */}
-          <div className="mt-6 pt-5 border-t border-slate-100 space-y-2.5 text-[11px]">
-            <span className="text-slate-400 block font-semibold text-center uppercase tracking-wider">快捷通道切换测试角色级别</span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => { setUsernameInput('admin'); setPasswordInput('admin123'); }}
-                className={`py-2 rounded-lg border text-center font-bold cursor-pointer transition-all ${
-                  usernameInput === 'admin' ? 'bg-[#1c3652]/10 text-[#1c3652] border-[#1c3652]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                市总站管理员
-              </button>
-              <button
-                type="button"
-                onClick={() => { setUsernameInput('sq_sg1'); setPasswordInput('admin123'); }}
-                className={`py-2 rounded-lg border text-center font-bold cursor-pointer transition-all ${
-                  usernameInput === 'sq_sg1' ? 'bg-[#1c3652]/10 text-[#1c3652] border-[#1c3652]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                赛岐站点主管
-              </button>
-              <button
-                type="button"
-                onClick={() => { setUsernameInput('kljygt'); setPasswordInput('admin123'); }}
-                className={`py-2 rounded-lg border text-center font-bold cursor-pointer transition-all ${
-                  usernameInput === 'kljygt' ? 'bg-[#1c3652]/10 text-[#1c3652] border-[#1c3652]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                甘棠站点社工
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 leading-relaxed text-center pt-2">
-              注: 不同层级的账号登录，系统会自动加载并执行<span className="font-bold text-[#1c3652]">数据物理隔离</span>机制。非总站管理员将限本辖区学员的查询权限。
-            </p>
-          </div>
         </div>
 
         {/* Footer Credit */}
         <div className="mt-8 text-center text-[10px] text-slate-500 font-mono tracking-wider">
-          © 2026 A市残疾人联合会 & A市精安科技研发中心 | 版权所有
+          © 2026 个人版权所有
         </div>
       </div>
     );
