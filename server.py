@@ -148,11 +148,12 @@ def verify_password(plain: str, hashed: str) -> bool:
     except Exception:
         return False
 
-def create_jwt(user_id: str, username: str, role: str) -> str:
+def create_jwt(user_id: str, username: str, role: str, site_id: str = "") -> str:
     payload = {
         "sub": user_id,
         "username": username,
         "role": role,
+        "site_id": site_id,
         "iat": datetime.utcnow(),
         "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRE_HOURS)
     }
@@ -367,7 +368,8 @@ def list_students(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute('SELECT ' + S_COLS + ' FROM students WHERE deleted_at IS NULL ORDER BY created_at DESC')
+        where, params = apply_rls(request, 'students')
+        cur.execute('SELECT ' + S_COLS + ' FROM students WHERE deleted_at IS NULL AND ' + where + ' ORDER BY created_at DESC', params)
         rows = [dict(r) for r in cur.fetchall()]; cur.close(); return rows
     finally: put_db(conn)
 
@@ -445,7 +447,8 @@ def list_assessments(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute('SELECT ' + A_COLS + ' FROM assessments WHERE deleted_at IS NULL ORDER BY created_at DESC')
+        where, params = apply_rls(request, 'assessments')
+        cur.execute('SELECT ' + A_COLS + ' FROM assessments WHERE deleted_at IS NULL AND ' + where + ' ORDER BY created_at DESC', params)
         rows = [dict(r) for r in cur.fetchall()]; cur.close(); return rows
     finally: put_db(conn)
 
@@ -480,7 +483,8 @@ def list_trainings(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute('SELECT ' + T_COLS + ' FROM trainings WHERE deleted_at IS NULL ORDER BY created_at DESC')
+        where, params = apply_rls(request, 'trainings')
+        cur.execute('SELECT ' + T_COLS + ' FROM trainings WHERE deleted_at IS NULL AND ' + where + ' ORDER BY created_at DESC', params)
         rows = [dict(r) for r in cur.fetchall()]; cur.close(); return rows
     finally: put_db(conn)
 
@@ -515,7 +519,8 @@ def list_visits(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute('SELECT ' + V_COLS + ' FROM visits WHERE deleted_at IS NULL ORDER BY created_at DESC')
+        where, params = apply_rls(request, 'visits')
+        cur.execute('SELECT ' + V_COLS + ' FROM visits WHERE deleted_at IS NULL AND ' + where + ' ORDER BY created_at DESC', params)
         rows = [dict(r) for r in cur.fetchall()]; cur.close(); return rows
     finally: put_db(conn)
 
@@ -659,7 +664,7 @@ def login(request: Request, body: LoginReq):
             raise HTTPException(403, "该账号已被停用")
         
         # Generate JWT token
-        token = create_jwt(user["id"], user["username"], user["role"])
+        token = create_jwt(user["id"], user["username"], user["role"], user.get("siteId", ""))
         cur.close()
         return {"success": True, "token": token, "user": user}
     finally: put_db(conn)

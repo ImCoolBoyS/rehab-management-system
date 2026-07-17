@@ -64,7 +64,7 @@ def create_sites():
     print("\nCreating sites...")
     for i, town in enumerate(TOWNS):
         api("POST", "/api/v1/sites", json={
-            "name": f"{CITY}{town}社区康复服务点", "town": town,
+            "name": f"{town}社区康复点", "town": town,
             "siteType": "总站" if i == 0 else "乡镇站点", "isActive": True
         })
     sites = api("GET", "/api/v1/sites")
