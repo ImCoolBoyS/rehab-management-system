@@ -712,6 +712,7 @@ function AppContent() {
               students={students}
               trainings={trainings}
               visits={visits}
+              assessments={assessments}
               sites={sites}
               currentUser={{
                 role: sessionUser.role,

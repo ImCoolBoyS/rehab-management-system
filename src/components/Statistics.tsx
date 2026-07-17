@@ -10,12 +10,13 @@ import {
   Building2,
   Users
 } from 'lucide-react';
-import { Student, TrainingRecord, HomeVisit, Site } from '../types';
+import { Student, TrainingRecord, HomeVisit, Assessment, Site } from '../types';
 
 interface StatisticsProps {
   students: Student[];
   trainings: TrainingRecord[];
   visits: HomeVisit[];
+  assessments: Assessment[];
   sites: Site[];
   currentUser: {
     role: string;
@@ -28,6 +29,7 @@ export default function Statistics({
   students, 
   trainings, 
   visits, 
+  assessments, 
   sites,
   currentUser 
 }: StatisticsProps) {
@@ -60,6 +62,8 @@ export default function Statistics({
       const townTrainings = trainings.filter(t => townIds.includes(t.studentId));
       const todayTrainings = townTrainings.filter(t => (t.createdAt || "").startsWith(todayStr)).length;
       const townVisits = visits.filter(v => townIds.includes(v.studentId));
+      // 建档率: 已完成基线评估的学员占比
+      const withBaseline = townStudents.filter(s => assessments.some(a => a.studentId === s.id && a.assessmentType === "baseline")).length;
 
       return {
         name: site.name,
@@ -69,9 +73,10 @@ export default function Statistics({
         totalTrainings: townTrainings.length,
         todayTrainings,
         totalVisits: townVisits.length,
+        withBaseline,
       };
     });
-  }, [sites, students, trainings, visits]);
+  }, [sites, students, trainings, visits, assessments]);
 
   // Search
   const filtered = useMemo(() => {
@@ -200,7 +205,7 @@ export default function Statistics({
               <tbody>
                 {filtered.map(item => {
                   const enrollmentPercentage = item.registeredPatients > 0 
-                    ? Math.round((item.activeManaged / item.registeredPatients) * 100) 
+                    ? Math.round((item.withBaseline / item.registeredPatients) * 100) 
                     : 0;
                   return (
                     <tr key={item.town} className="border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
