@@ -437,6 +437,13 @@ def delete_student(sid: str):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
+        # Check for related records (cascade protection)
+        for table, label in [("assessments", "评估记录"), ("trainings", "康复训练"), ("visits", "入户探访")]:
+            cur.execute(f'SELECT COUNT(*) AS cnt FROM {table} WHERE student_id = %s AND deleted_at IS NULL', (sid,))
+            row = cur.fetchone()
+            count = row["cnt"] if row else 0
+            if count > 0:
+                raise HTTPException(400, f"该学员存在 {count} 条{label}，请先删除后再操作")
         cur.execute('UPDATE students SET deleted_at = NOW() WHERE id = %s', (sid,))
         conn.commit(); cur.close(); return {"success": True}
     finally: put_db(conn)

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
   FileText, 
@@ -38,9 +38,31 @@ export default function Dashboard({
   announcements, 
   currentUser 
 }: DashboardProps) {
-  // Today and Yesterday dates for comparisons
-  const systemTodayStr = '2026-07-17';
-  const systemYesterdayStr = '2026-07-16';
+  // Auto-refresh: re-render every 5 minutes
+  const [, setRefreshTick] = useState(0);
+  const refreshRef = useRef(null);
+  useEffect(() => {
+    const timer = setInterval(() => setRefreshTick(t => t + 1), 5 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Dynamic date based on actual system time
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const systemTodayStr = `${y}-${m}-${d}`;
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yy = yesterday.getFullYear();
+  const ym = String(yesterday.getMonth() + 1).padStart(2, "0");
+  const yd = String(yesterday.getDate()).padStart(2, "0");
+  const systemYesterdayStr = `${yy}-${ym}-${yd}`;
+
+  // After 5PM, use actual comparison; before 5PM, still show 0 diff
+  const currentHour = now.getHours();
+  const showComparison = currentHour >= 17;
 
   // 1. Calculate General Metrics and comparative differences
   const metrics = useMemo(() => {
@@ -49,7 +71,7 @@ export default function Dashboard({
     // Yesterday's new trainings
     const yesterdayTrainings = trainings.filter(t => t.createdAt?.startsWith(systemYesterdayStr)).length;
     // Difference with previous day (+1 or -2)
-    const trainingsDiff = todayTrainings - yesterdayTrainings;
+    const trainingsDiff = showComparison ? (todayTrainings - yesterdayTrainings) : 0;
 
     // Today's new visits
     const todayVisits = visits.filter(v => v.visitDate === systemTodayStr).length;
@@ -140,13 +162,21 @@ export default function Dashboard({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-300">今日新增康复训练</span>
-            {metrics.trainingsDiff >= 0 ? (
+            {!showComparison ? (
+              <span className="text-xs px-2 py-0.5 bg-slate-500 border border-slate-400 font-extrabold rounded-sm opacity-60" title="每日17:00后更新对比数据">
+                -- 
+              </span>
+            ) : metrics.trainingsDiff > 0 ? (
               <span className="text-xs px-2 py-0.5 bg-rose-600 border border-rose-500 font-extrabold rounded-sm" title="对比前一日新增人次">
                 +{metrics.trainingsDiff}
               </span>
-            ) : (
+            ) : metrics.trainingsDiff < 0 ? (
               <span className="text-xs px-2 py-0.5 bg-emerald-600 border border-emerald-500 font-extrabold rounded-sm" title="对比前一日减少人次">
                 {metrics.trainingsDiff}
+              </span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 bg-slate-500 border border-slate-400 font-extrabold rounded-sm opacity-50" title="与前一日持平">
+                {metrics.trainingsDiff === 0 ? "±0" : "0"}
               </span>
             )}
           </div>
@@ -154,9 +184,7 @@ export default function Dashboard({
             <span className="text-3xl font-black font-mono">{metrics.todayTrainings}</span>
             <span className="text-xs text-slate-300 ml-1 font-bold">人次</span>
           </div>
-          <div className="text-[11px] text-slate-300 border-t border-white/10 pt-2 mt-2">
-            全市各康复点今日提交累计
-          </div>
+
         </div>
 
         {/* Card 2: Cumulative Trainings */}
