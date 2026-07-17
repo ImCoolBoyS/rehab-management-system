@@ -61,7 +61,50 @@ async def auth_middleware(request: Request, call_next):
             return JSONResponse(status_code=401, content={"detail": "请先登录"})
     
     response = await call_next(request)
+    
+    if request.method in ('POST', 'PUT', 'DELETE') and path.startswith('/api/v1/'):
+        try:
+            conn = get_db()
+            user = getattr(request.state, 'user', {})
+            am = {'POST': 'CREATE', 'PUT': 'UPDATE', 'DELETE': 'DELETE'}
+            parts = path.split('/')
+            et = parts[3] if len(parts) > 3 else 'unknown'
+            write_audit_log(conn, user.get('id',''), user.get('username',''),
+                          am.get(request.method, request.method),
+                          et, None, {'path': path, 'status': response.status_code},
+                          request.client.host if request.client else '')
+            put_db(conn)
+        except Exception:
+            pass
+    
     return response
+
+
+
+# --- RLS Helper ------------------------------------
+def apply_rls(request, table_alias=""):
+    user = getattr(request.state, "user", None)
+    if not user:
+        return ("1=0", [])
+    role = user.get("role", "")
+    prefix = table_alias + "." if table_alias else ""
+    if role == "admin":
+        return ("1=1", [])
+    site_id = user.get("site_id", "")
+    return (prefix + "site_id = %s", [site_id])
+
+# --- Audit Log Helper --------------------------------
+def write_audit_log(conn, user_id, username, action, entity_type, entity_id=None, details=None, ip=""):
+    import json
+    try:
+        j = json.dumps(details, ensure_ascii=False) if details else None
+        c = conn.cursor()
+        c.execute("INSERT INTO audit_log (user_id, username, action, entity_type, entity_id, details, ip_address) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+            (user_id, username, action, entity_type, entity_id, j, ip))
+        conn.commit()
+        c.close()
+    except Exception as e:
+        print("Audit error:", str(e)[:80])
 
 
 @app.exception_handler(Exception)
@@ -250,7 +293,7 @@ ANN_COLS = '''id, title, content, target_site_ids as "targetSiteIds",
     created_at as "createdAt"'''
 # ─── SITES ─────────────────────────────────────────
 @app.get("/api/v1/sites")
-def list_sites():
+def list_sites(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -270,7 +313,7 @@ def create_site(body: SiteCreate):
 
 # ─── USERS ─────────────────────────────────────────
 @app.get("/api/v1/users")
-def list_users():
+def list_users(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -315,7 +358,7 @@ def delete_user(uid: str):
 
 # ─── STUDENTS ──────────────────────────────────────
 @app.get("/api/v1/students")
-def list_students():
+def list_students(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -393,7 +436,7 @@ def delete_student(sid: str):
 
 # ─── ASSESSMENTS ───────────────────────────────────
 @app.get("/api/v1/assessments")
-def list_assessments():
+def list_assessments(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -428,7 +471,7 @@ def delete_assessment(aid: str):
 
 # ─── TRAININGS ─────────────────────────────────────
 @app.get("/api/v1/trainings")
-def list_trainings():
+def list_trainings(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -463,7 +506,7 @@ def delete_training(tid: str):
 
 # ─── VISITS ────────────────────────────────────────
 @app.get("/api/v1/visits")
-def list_visits():
+def list_visits(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -498,7 +541,7 @@ def delete_visit(vid: str):
 
 # ─── ANNOUNCEMENTS ─────────────────────────────────
 @app.get("/api/v1/announcements")
-def list_announcements():
+def list_announcements(request: Request):
     conn = get_db()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
