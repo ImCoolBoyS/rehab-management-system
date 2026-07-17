@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import { Student, Assessment } from '../types';
 import { uploadPdf, getPdfUrl } from '../lib/api';
-import { uploadPdf, getPdfUrl } from '../lib/api';
 
 interface AssessmentsListProps {
   assessments: Assessment[];
@@ -723,4 +722,5 @@ export default function AssessmentsList({
     </div>
   );
 }
+
 
