@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 .git/
 __pycache__/
 *.pyc
@@ -14,7 +14,6 @@ AI_AGENT_PLAN.md
 AI_CONCEPTS.md
 server.ts
 server.ts.bak
-src/data.ts
 migration.py
 metadata.json
 bun.lock
