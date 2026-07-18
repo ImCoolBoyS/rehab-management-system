@@ -1,27 +1,39 @@
-version: "3.8"
+﻿version: "3.8"
+
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
+    container_name: rehab-db
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: rehab_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      POSTGRES_DB: rehab_db
     ports:
       - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-  api:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
     build: .
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/rehab_db
-      JWT_SECRET: change-me
-      NODE_ENV: production
+    container_name: rehab-app
+    restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/rehab_db"
+      NODE_ENV: "production"
+    volumes:
+      - pdf_uploads:/app/uploads/pdfs
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
+
 volumes:
   pgdata:
+  pdf_uploads:
