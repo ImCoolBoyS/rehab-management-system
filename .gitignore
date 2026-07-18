@@ -15,7 +15,6 @@ server.ts.bak
 # Old files
 server.ts
 server.ts.bak
-src/data.ts
 migration.py
 metadata.json
 bun.lock
