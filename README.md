@@ -154,16 +154,18 @@ npm run dev
 
 ---
 
+
 ## 截图
 
-> 截图示例(页面加载后补充):
-> - 登录页: 简洁的账号密码登录界面
-> - 数据看板: 今日新增训练数、训练总数对比、辖区统计核算表
-> - 学员列表: 分页展示、搜索筛选、CSV导出
-> - 康复训练: 训练类型、训练方法、时长记录
+![登录页](assets/screenshots/login.png)
+
+![数据看板](assets/screenshots/dashboard.png)
+
+![学员列表](assets/screenshots/students.png)
 
 ---
 
 ## 许可证
 
 Apache-2.0
+
