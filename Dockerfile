@@ -8,9 +8,8 @@ FROM node:20-alpine AS build-frontend
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
-COPY vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json index.html ./
+COPY vite.config.ts tsconfig.json index.html ./
 COPY src/ ./src/
-COPY public/ ./public/
 RUN npm run build
 
 # ---- Stage 2: 运行后端 + 静态文件服务 ----
@@ -28,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制后端代码
 COPY server.py .
+COPY init_schema.py .
 COPY generate_data.py .
 COPY tests/ ./tests/
 
