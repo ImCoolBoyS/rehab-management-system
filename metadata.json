@@ -1,6 +1,0 @@
-{
-  "name": "精神康复中心管理系统",
-  "description": "专为精神康复中心设计的管理后台，提供每日训练监测、各训练数量比例统计、乡镇录入统计及学员与康复项目的精细化管理看板。",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

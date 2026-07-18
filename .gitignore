@@ -12,3 +12,13 @@ __pycache__/
 debug_*.txt
 *.bat
 server.ts.bak
+# Old files
+server.ts
+server.ts.bak
+src/data.ts
+migration.py
+metadata.json
+bun.lock
+run.bat
+start_rehab.bat
+start_server.bat
