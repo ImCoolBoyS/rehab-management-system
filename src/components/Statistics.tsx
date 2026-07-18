@@ -34,7 +34,7 @@ export default function Statistics({
   currentUser 
 }: StatisticsProps) {
   const [townSearch, setTownSearch] = useState('');
-  const [selectedStatTab, setSelectedStatTab] = useState<"townships" | "categories">("townships");
+  const [selectedStatTab, setSelectedStatTab] = useState<"townships" | "categories" | "trends">("trends");
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
@@ -171,6 +171,10 @@ export default function Statistics({
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${selectedStatTab === "categories" ? "bg-[#1c3652] text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
           <BarChart4 className="h-3.5 w-3.5 inline mr-1" />九大门类结构比例分析
         </button>
+        <button onClick={() => setSelectedStatTab("trends")}
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${selectedStatTab === "trends" ? "bg-[#1c3652] text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}>
+          <TrendingUp className="h-3.5 w-3.5 inline mr-1" />趋势图表分析
+        </button>
       </div>
 
       {/* === TOWNSHIP TABLE === */}
@@ -292,6 +296,184 @@ export default function Statistics({
           </div>
         </div>
       )}
+
+      {/* === TRENDS CHARTS === */}
+      {selectedStatTab === "trends" && (
+        <div className="space-y-6">
+          {/* 7-Day Trend Line Chart */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div className="pb-3 border-b border-slate-100 mb-4">
+              <h3 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[#1c3652]" />
+                近7日训练 & 新增学员趋势
+              </h3>
+            </div>
+            <div className="flex flex-col items-center">
+              <svg viewBox="0 0 320 140" className="w-full max-w-lg h-auto">
+                {/* Grid lines */}
+                {[0, 1, 2, 3, 4].map(i => (
+                  <line key={i} x1="40" y1={20 + i * 25} x2="300" y2={20 + i * 25} stroke="#e2e8f0" strokeWidth="0.5" />
+                ))}
+                {/* Y-axis labels */}
+                {[0, 1, 2, 3, 4].map(i => (
+                  <text key={`yl-${i}`} x="35" y={24 + i * 25} textAnchor="end" fill="#94a3b8" fontSize="8" fontFamily="monospace">
+                    {Math.round(maxTrendVal * (4 - i) / 4)}
+                  </text>
+                ))}
+                {/* X-axis labels */}
+                {multiTrendData.map((d, i) => (
+                  <text key={`xl-${i}`} x={40 + i * (260 / (multiTrendData.length - 1))} y="132" textAnchor="middle" fill="#94a3b8" fontSize="8" fontFamily="monospace">
+                    {d.date}
+                  </text>
+                ))}
+                {/* Training polyline */}
+                <polyline
+                  points={trend1.path}
+                  fill="none"
+                  stroke={trend1.color}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Training dots */}
+                {multiTrendData.map((d, i) => (
+                  <circle
+                    key={`td-${i}`}
+                    cx={i * (260 / (multiTrendData.length - 1)) + 40}
+                    cy={140 - (d.trainings / maxTrendVal) * 140 * 0.75 - 15}
+                    r="3"
+                    fill={trend1.color}
+                    stroke="white"
+                    strokeWidth="1.5"
+                  />
+                ))}
+                {/* New students polyline */}
+                <polyline
+                  points={trend2.path}
+                  fill="none"
+                  stroke={trend2.color}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* New students dots */}
+                {multiTrendData.map((d, i) => (
+                  <circle
+                    key={`ns-${i}`}
+                    cx={i * (260 / (multiTrendData.length - 1)) + 40}
+                    cy={140 - (d.newStudents / maxTrendVal) * 140 * 0.75 - 15}
+                    r="3"
+                    fill={trend2.color}
+                    stroke="white"
+                    strokeWidth="1.5"
+                  />
+                ))}
+              </svg>
+              {/* Legend */}
+              <div className="flex gap-6 mt-3 text-xs text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 bg-[#1c3652] inline-block rounded-full"></span>
+                  <span>训练数</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-0.5 bg-[#4c8a8a] inline-block rounded-full"></span>
+                  <span>新增学员</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Daily Training Bar Chart */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <div className="pb-3 border-b border-slate-100 mb-4">
+                <h3 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-2">
+                  <BarChart4 className="h-4 w-4 text-[#2b4c70]" />
+                  各类型训练次数对比
+                </h3>
+              </div>
+              <div className="space-y-0">
+                <svg viewBox={`0 0 300 ${Math.max(30 * categoryStats.length + 20, 50)}`} className="w-full h-auto">
+                  {categoryStats.slice(0, 8).map((item, i) => {
+                    const maxCount = categoryStats[0]?.count || 1;
+                    const barW = (item.count / maxCount) * 200;
+                    const barColors = ["#1c3652", "#2b4c70", "#4c8a8a", "#c9a96e", "#94a3b8", "#64748b", "#475569", "#334155"];
+                    return (
+                      <g key={`bar-${i}`}>
+                        <text x="5" y={15 + i * 30} fill="#475569" fontSize="9" fontFamily="monospace" fontWeight="500">
+                          {item.type.length > 6 ? item.type.slice(0, 6) + ".." : item.type}
+                        </text>
+                        <rect x="85" y={5 + i * 30} width={barW} height="16" rx="3" fill={barColors[i % barColors.length]} opacity="0.85" />
+                        <text x={90 + barW} y={16 + i * 30} fill="#64748b" fontSize="8" fontFamily="monospace">
+                          {item.count}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+
+            {/* Risk Distribution Donut Chart */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <div className="pb-3 border-b border-slate-100 mb-4">
+                <h3 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-2">
+                  <PieChart className="h-4 w-4 text-[#4c8a8a]" />
+                  学员风险等级分布
+                </h3>
+              </div>
+              <div className="flex items-center justify-center gap-6">
+                <svg viewBox="0 0 120 120" className="w-28 h-28">
+                  {(() => {
+                    const total = summaryMetrics.risk.lowRisk + summaryMetrics.risk.medRisk + summaryMetrics.risk.highRisk;
+                    if (total === 0) return <text x="60" y="65" textAnchor="middle" fill="#94a3b8" fontSize="10">无数据</text>;
+                    const segments = [
+                      { value: summaryMetrics.risk.lowRisk, color: "#059669", label: "低" },
+                      { value: summaryMetrics.risk.medRisk, color: "#d97706", label: "中" },
+                      { value: summaryMetrics.risk.highRisk, color: "#e11d48", label: "高" },
+                    ];
+                    const r = 45, cx = 60, cy = 60;
+                    const circ = 2 * Math.PI * r;
+                    let offset = 0;
+                    return segments.map((seg, i) => {
+                      const segLen = (seg.value / total) * circ;
+                      const segEl = (
+                        <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+                          stroke={seg.color} strokeWidth="18"
+                          strokeDasharray={`${segLen} ${circ - segLen}`}
+                          strokeDashoffset={-offset}
+                          transform={`rotate(-90 ${cx} ${cy})`}
+                          opacity="0.85"
+                        />
+                      );
+                      offset += segLen;
+                      return segEl;
+                    });
+                  })()}
+                </svg>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                    <span className="text-slate-600">低风险</span>
+                    <span className="font-mono font-bold text-slate-800">{summaryMetrics.risk.lowRisk}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                    <span className="text-slate-600">中风险</span>
+                    <span className="font-mono font-bold text-slate-800">{summaryMetrics.risk.medRisk}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-600 inline-block"></span>
+                    <span className="text-slate-600">高风险</span>
+                    <span className="font-mono font-bold text-slate-800">{summaryMetrics.risk.highRisk}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
