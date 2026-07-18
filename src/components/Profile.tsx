@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { User, ShieldAlert, Key, Smartphone, Building, Award } from 'lucide-react';
+import { User, Award, Smartphone, Building } from 'lucide-react';
 
 interface ProfileProps {
   currentUser: {
@@ -63,16 +63,6 @@ export default function Profile({ currentUser }: ProfileProps) {
               <span className="font-bold">{currentUser.siteName}</span>
             </span>
           </div>
-        </div>
-
-        <div className="p-5 bg-slate-50 space-y-2 text-xs text-slate-600">
-          <div className="font-bold text-slate-800 flex items-center gap-1">
-            <ShieldAlert className="h-4 w-4 text-amber-500" />
-            <span>全网安全防线说明 (Security Compliance Audit)</span>
-          </div>
-          <p className="leading-relaxed text-[11px]">
-            当前您正通过福安市残疾人联合会精康中心操作通道进行数据核对与记录，每次记录提交都会触发 <span className="font-bold text-slate-800">CUD 审计引擎</span>，记录您的操作 IP、操作时间、以及对应的敏感字段内容变更。请确保业务真实记录，切勿将涉及患者隐私的数据向外界传播、拍照、打印或私自导出，保障国家健康数据合规性。
-          </p>
         </div>
       </div>
     </div>

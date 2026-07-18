@@ -1,99 +1,169 @@
-﻿# 精神康复中心管理系统
+﻿# 精神康复中心管理系统 (Rehab Management System)
 
-社区精神障碍康复服务信息化管理平台。
+一个基于 **React 19 + FastAPI + PostgreSQL 16** 的精神康复中心管理平台，支持学员建档、康复训练记录、入户探访、评估管理等核心业务。
+
+---
+
+## 功能概览
+
+| 模块 | 功能 |
+|------|------|
+| 登录认证 | JWT 认证 + 密码加密 + 5分钟心跳保活 |
+| 数据看板 | 今日新增康复训练、训练总数对比、辖区统计核算表 |
+| 学员管理 | 增删改查、CSV 导出、搜索筛选 |
+| 康复训练 | 9大训练类型记录、新增/编辑/删除 |
+| 入户探访 | 探访记录管理、用药检查、风险评估 |
+| 评估管理 | 基线评估、过程评估、9大维度评分 |
+| 个人中心 | 账号信息查看 |
+| 通告管理 | 系统通告发布、关闭功能 |
+| 统计报表 | 辖区各服务点信息录入率、累计恢复总数 |
+| PDF上传 | 评估报告PDF附件上传与下载 |
+
+---
 
 ## 技术栈
 
 | 层级 | 技术 |
 |------|------|
-| **前端** | React 19 + TypeScript + Vite 6 + Tailwind CSS 4 |
-| **后端** | Python 3.11+ / FastAPI |
-| **数据库** | PostgreSQL 16 |
-| **认证** | JWT + bcrypt |
-| **部署** | Docker / Nginx (可选) |
+| 前端框架 | React 19 + TypeScript |
+| 构建工具 | Vite 6 |
+| 样式 | Tailwind CSS 4 |
+| UI组件 | Lucide React (图标) |
+| 后端框架 | Python FastAPI |
+| 数据库 | PostgreSQL 16 |
+| ORM | psycopg2 (原生连接) |
+| 认证 | JWT + bcrypt |
+| 限流 | slowapi (5次/分钟登录限制) |
+
+---
 
 ## 快速开始
 
-### 环境要求
+### 前置条件
 
+- Python 3.10+
 - Node.js 18+
-- Python 3.11+
 - PostgreSQL 16
 
-### 1. 安装依赖
+### 1. 创建数据库
 
-`ash
-npm install
+```sql
+createdb -U postgres rehab_db
+```
+
+### 2. 安装后端依赖
+
+```bash
 pip install -r requirements.txt
-`
+```
 
-### 2. 配置数据库
+### 3. 安装前端依赖
 
-确保本地 PostgreSQL 运行，创建数据库：
+```bash
+npm install
+```
 
-`ash
-createdb rehab_db
-`
+### 4. 启动服务
 
-默认连接地址：postgresql://postgres:postgres@localhost:5432/rehab_db
+**终端 1 - 启动后端:**
 
-### 3. 启动服务
-
-`ash
-# 终端1: 启动后端
+```bash
 python server.py
+```
 
-# 终端2: 启动前端
+启动时自动完成了三件事:
+- 连接 PostgreSQL
+- 检查/创建数据库表结构
+- 如果数据库为空则自动生成测试数据(13个站点、29个学员、评估/训练/探访数据)
+
+**终端 2 - 启动前端:**
+
+```bash
 npm run dev
-`
-
-### 4. 生成测试数据
-
-`ash
-python generate_data.py
-`
+```
 
 ### 5. 访问系统
 
-打开 http://localhost:5173
+浏览器打开 `http://localhost:5173`
 
-| 账号 | 密码 | 角色 |
-|------|------|------|
-| dmin | dmin123 | 管理员 |
-| sg_1 | dmin123 | 社工 |
+---
 
-## 功能模块
+## 默认账号
 
-- **办公桌面** — 业务概览看板，显示关键指标和趋势
-- **学员档案管理** — 学员信息 CRUD，支持风险等级分类
-- **基线评估** — 六大维度临床量表评估 (baseline/process1/process2)
-- **九大康复训练** — 训练记录管理，支持多种训练类型
-- **入户探访随访** — 探访记录管理
-- **数据统计中心** — 按站点统计、训练类型比例分析
-- **数据查询中心** — 学员维度数据聚合查询
-- **系统公告** — 公告发布与管理
-- **PDF 附件上传** — 评估量表扫描件上传存档
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| admin | admin123 | 站点管理员 |
+| sg_1 ~ sg_13 | admin123 | 社工用户 |
+
+---
 
 ## 项目结构
 
-`
-├── server.py              # FastAPI 后端
-├── src/                   # React 前端
-│   ├── components/        # UI 组件
-│   ├── lib/api.ts         # API 封装
-│   ├── hooks/             # 自定义 hooks
-│   └── types.ts           # TypeScript 类型定义
-├── generate_data.py       # 测试数据生成脚本
-├── tests/                 # API 测试
-└── uploads/pdfs/          # PDF 附件存储
-`
+```
+├── server.py              # FastAPI 后端服务（含自动建表 + 数据初始化）
+├── init_schema.py         # 数据库表结构定义
+├── generate_data.py       # 测试数据生成
+├── requirements.txt       # Python 依赖
+├── vite.config.ts         # Vite 配置
+├── src/
+│   ├── App.tsx            # 主应用组件
+│   ├── main.tsx           # 入口文件
+│   ├── data.ts            # 下拉选项常量
+│   ├── hooks/
+│   │   └── useAppMutations.ts  # 数据操作 hooks
+│   └── components/
+│       ├── LoginPage.tsx       # 登录页面
+│       ├── Dashboard.tsx       # 数据看板
+│       ├── StudentsList.tsx    # 学员列表
+│       ├── TrainingsList.tsx   # 康复训练
+│       ├── VisitsList.tsx      # 入户探访
+│       ├── AssessmentsList.tsx # 评估管理
+│       ├── Profile.tsx         # 个人中心
+│       └── ...
+└── tests/
+    └── test_api.py        # API 测试
+```
 
-## 安全特性
+---
 
-- ✅ JWT 身份认证
-- ✅ bcrypt 密码加密
-- ✅ 行级数据隔离 (RLS)
-- ✅ 审计日志
-- ✅ SQL 注入防护
-- ✅ 速率限制 (5次/分钟)
-- ✅ XSS 过滤
+## API 接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/v1/login | 用户登录 |
+| GET | /api/v1/students | 获取学员列表(支持搜索/筛选) |
+| POST | /api/v1/students | 新增学员 |
+| PUT | /api/v1/students/{id} | 更新学员 |
+| DELETE | /api/v1/students/{id} | 删除学员(有关联数据时拒绝) |
+| GET | /api/v1/trainings | 获取训练列表 |
+| POST | /api/v1/trainings | 新增训练 |
+| PUT | /api/v1/trainings/{id} | 更新训练 |
+| DELETE | /api/v1/trainings/{id} | 删除训练 |
+| GET | /api/v1/visits | 获取探访列表 |
+| POST | /api/v1/visits | 新增探访 |
+| GET | /api/v1/assessments | 获取评估列表 |
+| POST | /api/v1/assessments | 新增评估 |
+| GET | /api/v1/sites | 获取站点列表 |
+| POST | /api/v1/users | 新增用户 |
+| GET | /api/v1/announcements | 获取通告列表 |
+| POST | /api/v1/announcements | 新增通告 |
+| POST | /api/v1/upload/pdf | 上传PDF附件 |
+| GET | /api/v1/files/{path} | 下载文件 |
+| POST | /api/v1/heartbeat | 心跳保活 |
+| GET | /api/v1/dashboard/town-stats | 辖区统计核算表 |
+
+---
+
+## 截图
+
+> 截图示例(页面加载后补充):
+> - 登录页: 简洁的账号密码登录界面
+> - 数据看板: 今日新增训练数、训练总数对比、辖区统计核算表
+> - 学员列表: 分页展示、搜索筛选、CSV导出
+> - 康复训练: 训练类型、训练方法、时长记录
+
+---
+
+## 许可证
+
+Apache-2.0
