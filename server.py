@@ -133,6 +133,28 @@ def startup():
     db_pool = pg_pool.ThreadedConnectionPool(1, 20, DB_URL)
     conn = get_db(); cur = conn.cursor(cursor_factory=RealDictCursor); cur.execute("SELECT 1"); cur.close()
     put_db(conn); print("PostgreSQL 连接成功")
+    # 自动初始化表结构（如不存在则创建）
+    try:
+        from init_schema import init_schema
+        init_schema()
+        print("数据库表结构检查/初始化完成")
+    except Exception as e:
+        print(f"表结构初始化跳过: {e}")
+    # 检查是否需要生成测试数据
+    try:
+        c = get_db(); cu = c.cursor()
+        cu.execute("SELECT COUNT(*) AS cnt FROM sites")
+        cnt = cu.fetchone()[0]
+        cu.close(); put_db(c)
+        if cnt == 0:
+            print("数据库为空，正在生成测试数据...")
+            gen_py = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generate_data.py")
+            exec(compile(open(gen_py, encoding="utf-8").read(), gen_py, "exec"))
+            print("测试数据生成完成")
+        else:
+            print(f"数据库已有数据 (sites={cnt})，跳过初始化")
+    except Exception as e:
+        print(f"数据初始化跳过: {e}")
 
 @app.on_event("shutdown")
 def shutdown():
