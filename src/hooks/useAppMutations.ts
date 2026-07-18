@@ -23,6 +23,7 @@ export function useAppMutations(sites: Site[]) {
   const deleteAnnouncement = useDeleteAnnouncementMutation();
 
   const siteIdForTown = useCallback((town: string, fallbackId: string) => {
+    if (!town) return fallbackId;
     const matched = sites.find(s => s.town === town);
     return matched ? matched.id : fallbackId;
   }, [sites]);

@@ -197,8 +197,19 @@ function AppContent() {
 
   // Restore session & auto-refresh token every 5 minutes
   React.useEffect(() => {
+  const DATA_VERSION = "v2_fake";
     const token = getAuthToken();
     if (!token) return;
+    // Check if stored session is from a different data version
+    const storedVersion = localStorage.getItem("rehab_data_version");
+    if (storedVersion !== DATA_VERSION) {
+      localStorage.removeItem("rehab_session_user");
+      localStorage.removeItem("rehab_session_time");
+      localStorage.setItem("rehab_data_version", DATA_VERSION);
+      setAuthToken(null);
+      setIsAuthenticated(false);
+      return;
+    }
 
     // Try to restore user session from localStorage
     const savedUser = localStorage.getItem("rehab_session_user");
