@@ -4,6 +4,26 @@
 
 ---
 
+## 界面截图
+
+| 登录页面 | 办公桌面（数据看板） |
+|:--------:|:-------------------:|
+| ![登录](assets/screenshots/login.png) | ![数据看板](assets/screenshots/dashboard.png) |
+
+| 数据统计中心 | 学员档案管理 |
+|:--------:|:-------------------:|
+| ![统计](assets/screenshots/statistics.png) | ![学员](assets/screenshots/students.png) |
+
+| 新增学员表单 | 九大康复训练 |
+|:--------:|:-------------------:|
+| ![新增](assets/screenshots/student_add.png) | ![训练](assets/screenshots/trainings.png) |
+
+| 入户探访记录 | 基线评估 |
+|:--------:|:-------------------:|
+| ![探访](assets/screenshots/visits.png) | ![评估](assets/screenshots/assessments.png) |
+
+---
+
 ## 功能概览
 
 | 模块 | 功能 |
@@ -48,80 +68,63 @@
 ### 1. 创建数据库
 
 ```sql
-createdb -U postgres rehab_db
+CREATE DATABASE rehab_db;
 ```
 
-### 2. 安装后端依赖
+### 2. 配置环境变量
+
+复制 `.env.example` 为 `.env`，修改数据库密码：
+
+```
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/rehab_db"
+```
+
+### 3. 安装 Python 依赖
 
 ```bash
-pip install -r requirements.txt
+pip install fastapi uvicorn psycopg2-binary bcrypt pyjwt python-multipart pydantic slowapi
 ```
 
-### 3. 安装前端依赖
+### 4. 安装前端依赖
 
 ```bash
 npm install
 ```
 
-### 4. 启动服务
-
-**终端 1 - 启动后端:**
+### 5. 启动
 
 ```bash
+# 启动后端（自动建表 + 写入测试数据）
 python server.py
+
+# 新开终端，启动前端
+npx vite --port 5173
 ```
 
-启动时自动完成了三件事:
-- 连接 PostgreSQL
-- 检查/创建数据库表结构
-- 如果数据库为空则自动生成测试数据(13个站点、29个学员、评估/训练/探访数据)
+浏览器打开 http://localhost:5173
 
-**终端 2 - 启动前端:**
-
-```bash
-npm run dev
-```
-
-### 5. 访问系统
-
-浏览器打开 `http://localhost:5173`
-
----
-
-## 默认账号
-
-| 用户名 | 密码 | 角色 |
-|--------|------|------|
-| admin | admin123 | 站点管理员 |
-| sg_1 ~ sg_13 | admin123 | 社工用户 |
+默认管理员账号：`admin` / 密码：`admin123`
 
 ---
 
 ## 项目结构
 
 ```
-├── server.py              # FastAPI 后端服务（含自动建表 + 数据初始化）
-├── init_schema.py         # 数据库表结构定义
-├── generate_data.py       # 测试数据生成
-├── requirements.txt       # Python 依赖
-├── vite.config.ts         # Vite 配置
+├── server.py              # FastAPI 后端
+├── init_schema.py         # 数据库建表脚本
+├── generate_data.py       # 测试数据生成脚本
+├── migration.py           # 数据库迁移脚本
 ├── src/
-│   ├── App.tsx            # 主应用组件
-│   ├── main.tsx           # 入口文件
-│   ├── data.ts            # 下拉选项常量
-│   ├── hooks/
-│   │   └── useAppMutations.ts  # 数据操作 hooks
-│   └── components/
-│       ├── LoginPage.tsx       # 登录页面
-│       ├── Dashboard.tsx       # 数据看板
-│       ├── StudentsList.tsx    # 学员列表
-│       ├── TrainingsList.tsx   # 康复训练
-│       ├── VisitsList.tsx      # 入户探访
-│       ├── AssessmentsList.tsx # 评估管理
-│       ├── Profile.tsx         # 个人中心
-│       └── ...
-└── tests/
-    └── test_api.py        # API 测试
+│   ├── App.tsx            # 主应用（路由/登录/数据流）
+│   ├── main.tsx           # 入口
+│   ├── types.ts           # TypeScript 类型
+│   ├── data.ts            # 下拉常量
+│   ├── lib/api.ts         # API 调用封装（React Query）
+│   └── components/        # 页面组件
+├── assets/screenshots/    # 界面截图
+├── PYTHON_SETUP.md        # Python 环境配置指南
+├── DB_TEST_DATA_GUIDE.md  # 数据库测试数据指南
+└── HANDOFF.md             # 项目交接文档
 ```
 
 ---
@@ -130,42 +133,26 @@ npm run dev
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | /api/v1/login | 用户登录 |
-| GET | /api/v1/students | 获取学员列表(支持搜索/筛选) |
-| POST | /api/v1/students | 新增学员 |
-| PUT | /api/v1/students/{id} | 更新学员 |
-| DELETE | /api/v1/students/{id} | 删除学员(有关联数据时拒绝) |
-| GET | /api/v1/trainings | 获取训练列表 |
-| POST | /api/v1/trainings | 新增训练 |
-| PUT | /api/v1/trainings/{id} | 更新训练 |
-| DELETE | /api/v1/trainings/{id} | 删除训练 |
-| GET | /api/v1/visits | 获取探访列表 |
-| POST | /api/v1/visits | 新增探访 |
-| GET | /api/v1/assessments | 获取评估列表 |
-| POST | /api/v1/assessments | 新增评估 |
-| GET | /api/v1/sites | 获取站点列表 |
-| POST | /api/v1/users | 新增用户 |
-| GET | /api/v1/announcements | 获取通告列表 |
-| POST | /api/v1/announcements | 新增通告 |
-| POST | /api/v1/upload/pdf | 上传PDF附件 |
-| GET | /api/v1/files/{path} | 下载文件 |
-| POST | /api/v1/heartbeat | 心跳保活 |
-| GET | /api/v1/dashboard/town-stats | 辖区统计核算表 |
+| POST | /api/v1/login | 登录 |
+| GET/POST | /api/v1/students | 学员列表/新增 |
+| PUT/DELETE | /api/v1/students/{id} | 更新/删除学员 |
+| GET/POST | /api/v1/assessments | 评估列表/新增 |
+| GET/POST | /api/v1/trainings | 训练列表/新增 |
+| GET/POST | /api/v1/visits | 探访列表/新增 |
+| CRUD | /api/v1/announcements | 公告管理 |
+| CRUD | /api/v1/users | 用户管理 |
+| GET/POST | /api/v1/sites | 站点管理 |
+| POST | /api/v1/upload/pdf | PDF上传 |
 
 ---
 
+## 默认测试账号
 
-## 截图
+| 用户名 | 密码 | 角色 | 说明 |
+|--------|------|------|------|
+| admin | admin123 | 超级管理员 | 全部权限 |
+| sg_1 | admin123 | 社工 | A街道服务点 |
+| sg_2 | admin123 | 社工 | B街道服务点 |
+| ... | admin123 | 社工 | 其余各乡镇 |
 
-![登录页](assets/screenshots/login.png)
-
-![数据看板](assets/screenshots/dashboard.png)
-
-![学员列表](assets/screenshots/students.png)
-
----
-
-## 许可证
-
-Apache-2.0
-
+社工账号仅能查看本乡镇数据。
