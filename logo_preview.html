@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Logo 设计方案</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0f172a; font-family: system-ui, sans-serif; color: #e2e8f0; padding: 40px; }
+h1 { text-align: center; font-size: 24px; color: #14b8a6; margin-bottom: 10px; letter-spacing: 2px; }
+.sub { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 40px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px 24px; text-align: center; transition: all 0.2s; }
+.card:hover { border-color: #14b8a6; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(20,184,166,0.15); }
+.card svg { margin: 0 auto 16px; }
+.card h3 { font-size: 14px; color: #f1f5f9; margin-bottom: 4px; }
+.card p { font-size: 11px; color: #64748b; line-height: 1.6; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-top: 12px; }
+.badge-hot { background: rgba(239,68,68,0.2); color: #fca5a5; }
+.badge-rec { background: rgba(20,184,166,0.2); color: #5eead4; }
+</style>
+</head>
+<body>
+<h1>精神康复中心管理系统</h1>
+<p class="sub">Logo 设计方案 · 点击查看效果</p>
+
+<div class="grid">
+
+<!-- 方案1: 心 + 嫩芽 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#14b8a6"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </linearGradient>
+    </defs>
+    <!-- 心形 -->
+    <path d="M45 75 C15 55 5 35 15 22 C25 9 45 18 45 32 C45 18 65 9 75 22 C85 35 75 55 45 75Z" 
+          fill="none" stroke="url(#g1)" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- 嫩芽 -->
+    <path d="M45 38 Q45 20 55 14" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M55 14 L50 17 M55 14 L52 10" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <h3>心芽 · Heart &amp; Sprout</h3>
+  <p>心形为主体，中心萌发金色嫩芽<br/>寓意：关爱中孕育康复希望</p>
+  <span class="badge badge-rec">推荐</span>
+</div>
+
+<!-- 方案2: 双手托举 + 人 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#14b8a6"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </linearGradient>
+    </defs>
+    <!-- 抽象人 -->
+    <circle cx="45" cy="28" r="10" fill="none" stroke="url(#g2)" stroke-width="2.5"/>
+    <path d="M45 38 L45 60 M35 50 L55 50" fill="none" stroke="url(#g2)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 托举双手 -->
+    <path d="M15 80 Q30 65 45 72 Q60 65 75 80" fill="none" stroke="url(#g2)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 上方的星星/光点 -->
+    <circle cx="65" cy="18" r="2" fill="#f59e0b"/>
+    <circle cx="72" cy="26" r="1.5" fill="#f59e0b"/>
+    <circle cx="28" cy="15" r="1.5" fill="#fbbf24"/>
+  </svg>
+  <h3>托举 · Supporting Hands</h3>
+  <p>人形居中，双手从底部托举<br/>寓意：社区康复体系的支撑力量</p>
+</div>
+
+<!-- 方案3: 抽象大脑 + 叶 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#818cf8"/>
+        <stop offset="100%" stop-color="#6366f1"/>
+      </linearGradient>
+    </defs>
+    <!-- 抽象大脑 -->
+    <path d="M25 40 Q25 18 45 18 Q65 18 65 40 Q65 55 55 65 L45 70 L35 65 Q25 55 25 40Z" 
+          fill="none" stroke="url(#g3)" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- 脑内褶皱 -->
+    <path d="M35 30 Q45 28 55 30" fill="none" stroke="url(#g3)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M32 40 Q45 38 58 40" fill="none" stroke="url(#g3)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M35 50 Q45 48 55 50" fill="none" stroke="url(#g3)" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- 发芽 -->
+    <path d="M60 25 Q68 18 72 12" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M72 12 L66 15 M72 12 L74 6" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <h3>脑叶 · Brain &amp; Leaf</h3>
+  <p>抽象大脑轮廓，顶部绿色新芽破出<br/>寓意：精神康复、认知重生</p>
+</div>
+
+<!-- 方案4: 两个人 + 心 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#14b8a6"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </linearGradient>
+    </defs>
+    <!-- 两个人形 -->
+    <circle cx="30" cy="25" r="8" fill="none" stroke="url(#g4)" stroke-width="2"/>
+    <path d="M30 33 L30 52 M22 42 L38 42" fill="none" stroke="url(#g4)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="60" cy="25" r="8" fill="none" stroke="url(#g4)" stroke-width="2"/>
+    <path d="M60 33 L60 52 M52 42 L68 42" fill="none" stroke="url(#g4)" stroke-width="2" stroke-linecap="round"/>
+    <!-- 中间的连接心形 -->
+    <path d="M45 50 C35 42 38 32 45 38 C52 32 55 42 45 50Z" fill="#f59e0b" opacity="0.8"/>
+  </svg>
+  <h3>携手 · People &amp; Heart</h3>
+  <p>两个人形由一颗金色心形连接<br/>寓意：同伴支持、社区共融</p>
+</div>
+
+<!-- 方案5: 太阳/希望 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+    </defs>
+    <!-- 太阳半圆 -->
+    <path d="M15 55 A30 30 0 0 1 75 55Z" fill="none" stroke="url(#g5)" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- 光芒 -->
+    <path d="M45 15 L45 22 M45 68 L45 72" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+    <path d="M25 25 L30 30 M65 25 L60 30" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+    <path d="M18 40 L25 42 M72 40 L65 42" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+    <!-- 底部波浪（路/水） -->
+    <path d="M20 62 Q35 56 45 62 Q55 68 70 62" fill="none" stroke="#14b8a6" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 小苗 -->
+    <path d="M45 55 L45 42 L42 46 M45 42 L48 46" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <h3>晨光 · Sunrise</h3>
+  <p>初升太阳 + 破土新芽 + 水波<br/>寓意：新的一天，康复曙光</p>
+</div>
+
+<!-- 方案6: 抽象 鸟/翅膀 -->
+<div class="card">
+  <svg width="90" height="90" viewBox="0 0 90 90">
+    <defs>
+      <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#14b8a6"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </linearGradient>
+    </defs>
+    <!-- 展开的翅膀/手 -->
+    <path d="M45 65 Q15 50 5 30 Q15 35 25 30 Q30 28 35 25" fill="none" stroke="url(#g6)" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M45 65 Q75 50 85 30 Q75 35 65 30 Q60 28 55 25" fill="none" stroke="url(#g6)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 中间的圆（太阳/人） -->
+    <circle cx="45" cy="35" r="12" fill="none" stroke="url(#g6)" stroke-width="2.5"/>
+    <!-- 内心的点 -->
+    <circle cx="45" cy="35" r="3" fill="#f59e0b"/>
+    <!-- 下方路径（道路） -->
+    <path d="M30 72 Q45 78 60 72" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <h3>展翼 · Wings</h3>
+  <p>双翼展开环抱中心圆点，底部前路延伸<br/>寓意：守护、自由、康复之路</p>
+</div>
+
+</div>
+
+<div style="text-align: center; margin-top: 40px; font-size: 12px; color: #475569;">
+  你的选择将替换侧边栏中现有的 <code style="background:#1e293b;padding:2px 8px;border-radius:4px;">ClipboardList</code> 图标
+</div>
+
+</body>
+</html>
