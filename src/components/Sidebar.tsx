@@ -96,7 +96,7 @@ export default function Sidebar({
       <div className="p-5 border-b border-[#233a52] flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#2a435d] rounded-lg animate-pulse">
-            <ClipboardList className="h-6 w-6 text-cyan-400" />
+            <img src="/logo.png" alt="系统Logo" className="h-6 w-6 object-contain" />
           </div>
           <div>
             <h1 className="font-bold text-sm tracking-wide text-white leading-tight">A市精神障碍</h1>

@@ -462,7 +462,7 @@ function AppContent() {
         {/* System Title Card Header */}
         <div className="mb-6 text-center max-w-lg z-10 space-y-2">
           <div className="inline-flex p-3 bg-cyan-400/10 rounded-2xl border border-cyan-400/20 mb-1">
-            <ClipboardList className="h-8 w-8 text-cyan-400" />
+            <img src="/logo.png" alt="系统Logo" className="h-8 w-8 object-contain" />
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-wider text-white">精神障碍社区康复服务信息系统</h1>
           
